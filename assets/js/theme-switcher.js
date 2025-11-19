@@ -60,6 +60,10 @@
     else fn();
   }
 
+  .theme-switcher {
+  display: none !important;
+}
+
   onReady(function(){
     ensureTheme();
     injectUI();
