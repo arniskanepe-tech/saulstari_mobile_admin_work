@@ -1,0 +1,44 @@
+[
+  {
+    "name": "Smilts",
+    "price": 8.0,
+    "unit": "m3",
+    "status": "available",
+    "updated_at": "2025-10-28 13:46"
+  },
+  {
+    "name": "Melnzeme",
+    "price": 11.0,
+    "unit": "m3",
+    "status": "available",
+    "updated_at": "2025-10-28 13:46"
+  },
+  {
+    "name": "Šķembas 0/45",
+    "price": 7.5,
+    "unit": "t",
+    "status": "oos",
+    "updated_at": "2025-10-28 13:46"
+  },
+  {
+    "name": "Šķembas 0/56",
+    "price": 7.5,
+    "unit": "t",
+    "status": "available",
+    "updated_at": "2025-10-28 13:46"
+  },
+  {
+    "name": "Šķembas 0/32",
+    "price": 7.5,
+    "unit": "t",
+    "status": "low",
+    "updated_at": "2025-10-28 13:46"
+  },
+  {
+    "name": "Šķembas 0/16",
+    "price": 8.8,
+    "unit": "t",
+    "status": "available",
+    "updated_at": "2025-10-28 13:46"
+  }
+]
