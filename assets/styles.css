@@ -169,38 +169,63 @@ body::after{
   }
 }
 
-/* === Mobilā hamburger izvēlne === */
+/* Hamburger poga – tikai 3 līnijas, bez rāmja */
 
 .menu-toggle{
   display:none;
   width:40px;
   height:40px;
-  border-radius:12px;
-  border:2px solid rgba(117,69,97,0.35);
+  padding:10px 8px;          /* mazliet iekšējā mala */
+  border:none;               /* vairs NAV perimetrs */
   background:transparent;
-  padding:6px;
   cursor:pointer;
+  color:inherit;             /* līniju krāsa = header teksta krāsa (tēma) */
 }
 
 .menu-toggle span{
   display:block;
   height:2px;
-  margin:4px 0;
+  margin:3px 0;
   border-radius:999px;
-  background:#754561;
+  background:currentColor;   /* paņem krāsu no .menu-toggle (tātad no tēmas) */
 }
 
 /* Pilnekrāna mobilā izvēlne */
 .mobile-menu{
   position:fixed;
   inset:0;
-  background:var(--panel);
-  color:var(--text);
   z-index:999;
+
+  /* puscaurspīdīgs fons – lai cauri redzamas tēmas tekstūras/saulstari */
+  background:rgba(245,248,246,.96);
+  backdrop-filter:blur(4px);
+  -webkit-backdrop-filter:blur(4px);
+
+  color:var(--text);
   opacity:0;
   pointer-events:none;
   transform:translateY(10px);
   transition:opacity .25s ease, transform .25s ease;
+}
+
+/* Golden Sand – siltāks tonis */
+body.theme-golden-sand .mobile-menu{
+  background:rgba(246,241,231,.96);
+}
+
+/* GlassRail – nedaudz vēsāks, zilganīgs */
+body.theme-glassrail .mobile-menu{
+  background:rgba(247,249,251,.96);
+}
+
+/* SlateGold – neitrāli silts */
+body.theme-slategold .mobile-menu{
+  background:rgba(245,245,242,.96);
+}
+
+/* SolidBar – tumšā navigācijas tēma, bet menu lai ir gaišs, kā pārējām */
+body.theme-solidbar .mobile-menu{
+  background:rgba(241,245,241,.96);
 }
 
 .mobile-menu-inner{
@@ -270,6 +295,8 @@ body::after{
 /* Kontakti */
 .mobile-contact{
   margin-top:24px;
+  padding-top:16px;
+  border-top:1px solid var(--border);  /* horizontāla līnija */
   display:flex;
   flex-direction:column;
   gap:8px;
