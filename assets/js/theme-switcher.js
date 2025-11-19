@@ -65,3 +65,7 @@
     injectUI();
   });
 })();
+
+.theme-switcher {
+  display: none !important;
+}
