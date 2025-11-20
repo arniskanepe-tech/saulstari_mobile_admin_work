@@ -10,6 +10,13 @@
 .visually-hidden{position:absolute!important;height:1px;width:1px;overflow:hidden;clip:rect(1px,1px,1px,1px)}
 body{font-family:system-ui,Arial,sans-serif;margin:0;background:var(--bg);color:var(--text)}
 .container{max-width:1000px;margin:0 auto;padding:0 16px}
+@media (min-width: 1024px){
+  .container{
+    max-width: none;
+    width: 80%;
+    padding: 0;
+  }
+}
 .header{background:var(--panel);position:sticky;top:0;z-index:20;box-shadow:var(--shadow)}
 .nav{display:flex;align-items:center;justify-content:space-between;height:var(--nav-h)}
 .brand{display:flex;align-items:center;gap:10px}
