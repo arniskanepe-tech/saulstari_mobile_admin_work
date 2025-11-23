@@ -1,41 +1,206 @@
 <!DOCTYPE html>
-<html>
+<html lang="lv">
 <head>
-  <meta charset="UTF-8" />
-  <title>Saulstari — Materiāli</title>
-  <link rel="stylesheet" href="style.css" />
+  <meta charset="utf-8">
+  <title>Saulstari — Admin</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="style.css">
+  <style>
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      margin: 0;
+      background: #f4f6f1;
+      color: #122018;
+    }
+    .admin-wrapper {
+      max-width: 1000px;
+      margin: 32px auto;
+      padding: 0 16px 48px;
+    }
+    h1 {
+      margin-top: 0;
+      margin-bottom: 8px;
+    }
+    .admin-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+      margin-bottom: 24px;
+      font-size: 14px;
+    }
+    .admin-meta label {
+      font-weight: 600;
+    }
+    .admin-meta input[type="text"] {
+      padding: 4px 8px;
+      border-radius: 6px;
+      border: 1px solid #c5cec0;
+      font-size: 14px;
+      min-width: 220px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: #fff;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 2px 10px rgba(18, 31, 25, .06);
+      margin-bottom: 24px;
+    }
+    thead {
+      background: #e7efe3;
+    }
+    th, td {
+      padding: 10px 12px;
+      border-bottom: 1px solid #e3e7de;
+      font-size: 14px;
+      vertical-align: middle;
+    }
+    th {
+      text-align: left;
+      font-weight: 600;
+    }
+    tr:last-child td {
+      border-bottom: none;
+    }
+    input[type="number"],
+    input[type="text"],
+    select,
+    textarea {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 4px 6px;
+      border-radius: 6px;
+      border: 1px solid #c5cec0;
+      font-size: 13px;
+    }
+    textarea {
+      resize: vertical;
+      min-height: 32px;
+      max-height: 120px;
+    }
+    .status-pill {
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-size: 11px;
+      text-transform: uppercase;
+      border: 1px solid #c5cec0;
+      display: inline-block;
+    }
+    .status-available {
+      background: #e4f5ea;
+      border-color: #6aa87c;
+      color: #21452f;
+    }
+    .status-oos {
+      background: #fde7e7;
+      border-color: #dc6b6b;
+      color: #5a1f1f;
+    }
+    .status-low {
+      background: #fff4d9;
+      border-color: #e0aa39;
+      color: #5a3f12;
+    }
+    .admin-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+    }
+    .btn {
+      border: none;
+      border-radius: 999px;
+      padding: 8px 16px;
+      font-size: 14px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    .btn-primary {
+      background: #1f3b2d;
+      color: #fff;
+    }
+    .btn-secondary {
+      background: #ffffff;
+      color: #1f3b2d;
+      border: 1px solid #c5cec0;
+    }
+    .admin-status {
+      font-size: 13px;
+      color: #455449;
+    }
+    .admin-status strong {
+      font-weight: 600;
+    }
+    @media (max-width: 720px) {
+      table, thead, tbody, th, td, tr {
+        display: block;
+      }
+      thead {
+        display: none;
+      }
+      tr {
+        border-bottom: 1px solid #e3e7de;
+      }
+      td {
+        border-bottom: none;
+        padding: 6px 10px;
+      }
+      td::before {
+        content: attr(data-label);
+        display: block;
+        font-weight: 600;
+        margin-bottom: 2px;
+        font-size: 12px;
+        color: #455449;
+      }
+    }
+  </style>
 </head>
 <body>
-  <h1>Pieejamie materiāli</h1>
+  <div class="admin-wrapper">
+    <h1>Pieejamie materiāli</h1>
 
-  <table id="materialsTable">
-    <thead>
-      <tr>
-        <th>Nosaukums</th>
-        <th>Cena</th>
-        <th>Statuss</th>
-        <th>Pēdējās izmaiņas</th>
-      </tr>
-    </thead>
-    <tbody></tbody>
-  </table>
+    <div class="admin-meta">
+      <div>
+        <label for="lastUpdate">Kopējais atjaunošanas datums:&nbsp;</label>
+        <input type="text" id="lastUpdate" placeholder="2025-10-28 13:46">
+      </div>
+      <div class="admin-status" id="adminStatus">
+        Dati vēl nav ielādēti.
+      </div>
+    </div>
 
-  <script>
-    fetch('/api/materials')
-      .then(res => res.json())
-      .then(data => {
-        const tbody = document.querySelector("#materialsTable tbody");
-        data.forEach(m => {
-          const tr = document.createElement("tr");
-          tr.innerHTML = `
-            <td>${m.name}</td>
-            <td>${m.price} €</td>
-            <td>${m.availability}</td>
-            <td>${m.updated_at}</td>
-          `;
-          tbody.appendChild(tr);
-        });
-      });
-  </script>
+    <table id="materialsTable">
+      <thead>
+        <tr>
+          <th style="width: 24%">Nosaukums</th>
+          <th style="width: 14%">Cena</th>
+          <th style="width: 12%">Mērvienība</th>
+          <th style="width: 16%">Statuss</th>
+          <th style="width: 24%">Piezīmes</th>
+          <th style="width: 10%">ID</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- rindas tiks ģenerētas ar JS -->
+      </tbody>
+    </table>
+
+    <div class="admin-actions">
+      <button class="btn btn-primary" id="downloadJsonBtn">
+        Lejupielādēt materials.json
+      </button>
+      <button class="btn btn-secondary" id="reloadBtn">
+        Pārlādēt no servera
+      </button>
+      <div class="admin-status" id="saveHint">
+        <strong>Piezīme:</strong> lejupielādēto <code>materials.json</code> jāieliek GitHub <code>data</code> mapē, aizstājot veco failu.
+      </div>
+    </div>
+  </div>
+
+  <script src="admin.js"></script>
 </body>
 </html>
