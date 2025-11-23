@@ -1,79 +1,123 @@
-// materials.js – sākumlapa lasa datus no /api/materials
-document.addEventListener("DOMContentLoaded", () => {
-  const updatedEl = document.getElementById("home-materials-updated");
-  const cards = document.querySelectorAll(".vitem[data-material-id]");
+// materials.js
+document.addEventListener('DOMContentLoaded', () => {
+  const listEl = document.querySelector('[data-materials-list]');
+  const dateEl = document.querySelector('[data-materials-updated]');
 
-  if (!cards.length) return;
+  if (!listEl) {
+    console.error('Nav atrasts [data-materials-list] konteiners.');
+    return;
+  }
 
-  fetch("/api/materials")
-    .then(res => res.json())
+  fetch('data/materials.json?_=' + Date.now())
+    .then(r => r.json())
     .then(data => {
-      const lastUpdate = data.lastUpdate;
-      const materials = data.materials || [];
+      const items = data.materials || data.items || data || [];
+      listEl.innerHTML = '';
 
-      if (updatedEl && lastUpdate) {
-        updatedEl.textContent = "Dati atjaunoti: " + lastUpdate;
+      if (dateEl && data.lastUpdated) {
+        dateEl.textContent = data.lastUpdated;
       }
 
-      cards.forEach(card => {
-        const id = card.dataset.materialId;
-        const mat = materials.find(m => m.id === id);
-        if (!mat) return;
-
-        const priceEl = card.querySelector(".js-price");
-        const statusEl = card.querySelector(".js-status");
-        const notesEl = card.querySelector(".js-notes");
-        const dotEl = card.querySelector(".dot");
-        const actionEl = card.querySelector(".avail-action");
-
-        const availability = (mat.availability || "").toLowerCase();
-        const isOOS = availability === "nav pieejams";
-        const isLow = availability.includes("neliels");
-
-        // Cena + mērvienība
-        if (priceEl) {
-          priceEl.textContent = mat.price + " " + (mat.unit || "");
-        }
-
-        // Pieejamības teksts
-        if (statusEl) {
-          statusEl.textContent = mat.availability || "";
-        }
-
-        // Gaismiņa
-        if (dotEl) {
-          dotEl.classList.remove("green", "red", "yellow");
-          if (isOOS) dotEl.classList.add("red");
-          else if (isLow) dotEl.classList.add("yellow");
-          else dotEl.classList.add("green");
-        }
-
-        // "interesēties" poga, ja nav pieejams
-        if (actionEl) {
-          if (isOOS) {
-            const encodedName = encodeURIComponent(mat.name || "");
-            actionEl.innerHTML = `<a href="contact.html?material=${encodedName}#fast-form">interesēties</a>`;
-          } else {
-            actionEl.innerHTML = "";
-          }
-        }
-
-        // Piezīmes
-        if (notesEl) {
-          if (mat.notes && mat.notes.trim() !== "") {
-            notesEl.textContent = mat.notes;
-            notesEl.style.display = "";
-          } else {
-            notesEl.textContent = "";
-            notesEl.style.display = "none";
-          }
-        }
+      items.forEach(material => {
+        const card = createMaterialCard(material);
+        listEl.appendChild(card);
       });
     })
     .catch(err => {
-      console.error("Neizdevās ielādēt materiālus", err);
-      if (updatedEl) {
-        updatedEl.textContent = "Neizdevās ielādēt materiālu datus.";
-      }
+      console.error('Neizdevās ielādēt materials.json', err);
     });
 });
+
+function createMaterialCard(material) {
+  const card = document.createElement('article');
+  card.className = 'material-row';
+
+  // ==== Kreisā puse – nosaukums + cena + piezīme ====
+  const left = document.createElement('div');
+  left.className = 'material-row-main';
+
+  const titleRow = document.createElement('div');
+  titleRow.className = 'material-row-title';
+
+  const nameEl = document.createElement('div');
+  nameEl.className = 'material-name';
+  nameEl.textContent = material.name || '';
+
+  const priceEl = document.createElement('div');
+  priceEl.className = 'material-price';
+
+  const mainPriceSpan = document.createElement('span');
+  mainPriceSpan.textContent =
+    (material.price !== undefined && material.price !== null
+      ? trimPrice(material.price)
+      : '') +
+    (material.unit ? ' ' + material.unit : '');
+
+  priceEl.appendChild(mainPriceSpan);
+
+  // Piezīme – A variants: vienā rindā aiz mērvienības, tikai ja ir
+  if (material.notes && String(material.notes).trim() !== '') {
+    const noteSpan = document.createElement('span');
+    noteSpan.className = 'material-note-inline';
+    noteSpan.textContent = ' ' + String(material.notes).trim();
+    priceEl.appendChild(noteSpan);
+  }
+
+  titleRow.appendChild(nameEl);
+  titleRow.appendChild(priceEl);
+  left.appendChild(titleRow);
+
+  card.appendChild(left);
+
+  // ==== Labā puse – statuss + "interesēties" ====
+  const right = document.createElement('div');
+  right.className = 'material-row-status';
+
+  const label = document.createElement('span');
+  label.className = 'status-label';
+  label.textContent = 'Pieejamība:';
+
+  const dot = document.createElement('span');
+  dot.className = 'status-dot ' + getStatusDotClass(material.status);
+
+  const text = document.createElement('span');
+  text.className = 'status-text';
+  text.textContent = material.status || '';
+
+  right.appendChild(label);
+  right.appendChild(dot);
+  right.appendChild(text);
+
+  // Links "interesēties" tikai, ja nav pieejams
+  if (material.status === 'nav pieejams') {
+    const link = document.createElement('a');
+    link.href = '#kontakti';
+    link.className = 'status-link';
+    link.textContent = 'interesēties';
+    right.appendChild(link);
+  }
+
+  card.appendChild(right);
+
+  return card;
+}
+
+function trimPrice(value) {
+  const n = Number(value);
+  if (Number.isNaN(n)) return '';
+  // ja .0 – nerādām komatu, ja ir – rādām ar vienu zīmi
+  return Number.isInteger(n) ? String(n) : n.toFixed(1).replace(/\.0$/, '');
+}
+
+function getStatusDotClass(status) {
+  switch (status) {
+    case 'pieejams':
+      return 'status-dot--green';
+    case 'neliels daudzums':
+      return 'status-dot--yellow';
+    case 'nav pieejams':
+      return 'status-dot--red';
+    default:
+      return 'status-dot--grey';
+  }
+}
