@@ -1,5 +1,5 @@
 // admin/admin.js
-const DATA_URL = '../data/materials.json';
+const DATA_URL = '/api/materials';
 
 function statusLabel(av) {
   if (!av) return '';
