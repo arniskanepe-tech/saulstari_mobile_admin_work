@@ -1,63 +1,71 @@
-// materials.js
+// materials.js – sākumlapas materiālu sadaļai
 document.addEventListener('DOMContentLoaded', () => {
-  const materialsRoot = document.querySelector('#materials-root');
-  const updatedEl = document.querySelector('#materials-updated');
+  const updatedEl = document.querySelector('#home-materials-updated');
+  const cards = document.querySelectorAll('[data-material-id]');
 
-  if (!materialsRoot) return;
+  if (!cards.length) return; // ja nav kartiņu, nav ko darīt
 
   fetch('./data/materials.json')
     .then(res => res.json())
     .then(data => {
       const { lastUpdate, materials } = data;
 
-      // Atjaunošanas datums vienā vietā
+      // Globālais datums
       if (updatedEl && lastUpdate) {
         updatedEl.textContent = `Dati atjaunoti: ${lastUpdate}`;
       }
 
-      // Notīram konteineru
-      materialsRoot.innerHTML = '';
+      cards.forEach(card => {
+        const id = card.dataset.materialId;
+        const mat = materials.find(m => m.id === id);
 
-      materials.forEach(material => {
-        const {
-          title,
-          price,
-          unit,
-          availability,
-          notes
-        } = material;
+        if (!mat) return;
 
-        const card = document.createElement('article');
-        card.className = 'material-card';
+        const priceEl = card.querySelector('.js-price');
+        const statusEl = card.querySelector('.js-status');
+        const notesEl = card.querySelector('.js-notes');
 
-        const isUnavailable = availability && availability.toLowerCase() === 'nav pieejams';
+        const isUnavailable =
+          mat.availability &&
+          mat.availability.toLowerCase() === 'nav pieejams';
 
-        card.innerHTML = `
-          <div class="material-card-header">
-            <h3 class="material-title">${title || ''}</h3>
-            <div class="material-meta">
-              ${!isUnavailable && price != null && unit ? `
-                <span class="material-price">${price} <span class="material-unit">${unit}</span></span>
-              ` : ''}
-              ${isUnavailable ? `
-                <span class="material-status material-status-interest">INTERESĒTIES</span>
-              ` : `
-                <span class="material-status">${availability || ''}</span>
-              `}
-            </div>
-          </div>
-          ${notes && notes.trim() !== '' ? `
-            <p class="material-notes">${notes}</p>
-          ` : ''}
-        `;
+        // Cena + mērvienība, bet tikai ja nav "nav pieejams"
+        if (priceEl) {
+          if (!isUnavailable && mat.price != null && mat.unit) {
+            priceEl.textContent = `${mat.price} ${mat.unit}`;
+          } else {
+            // ja nav pieejams, var atstāt tukšu vai atstāt veco tekstu
+            // priceEl.textContent = '';
+          }
+        }
 
-        materialsRoot.appendChild(card);
+        // Pieejamība / INTERESĒTIES
+        if (statusEl) {
+          if (isUnavailable) {
+            statusEl.textContent = 'INTERESĒTIES';
+            statusEl.classList.add('material-status-interest');
+          } else {
+            statusEl.textContent = mat.availability || '';
+            statusEl.classList.remove('material-status-interest');
+          }
+        }
+
+        // Piezīmes
+        if (notesEl) {
+          if (mat.notes && mat.notes.trim() !== '') {
+            notesEl.textContent = mat.notes;
+            notesEl.style.display = '';
+          } else {
+            notesEl.textContent = '';
+            notesEl.style.display = 'none';
+          }
+        }
       });
     })
     .catch(err => {
       console.error('Neizdevās ielādēt materials.json', err);
-      if (materialsRoot) {
-        materialsRoot.innerHTML = '<p>Neizdevās ielādēt materiālu datus.</p>';
+      if (updatedEl) {
+        updatedEl.textContent = 'Neizdevās ielādēt materiālu datus.';
       }
     });
 });
