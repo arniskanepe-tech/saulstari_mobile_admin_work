@@ -1,29 +1,37 @@
-// admin.js
-const STATUS_OPTIONS = ['pieejams', 'neliels daudzums', 'nav pieejams'];
+// admin.js – admin/index.html tabulai, strādā ar /api/materials
+
+const STATUS_OPTIONS = [
+  { value: 'pieejams', label: 'pieejams' },
+  { value: 'neliels daudzums', label: 'neliels daudzums' },
+  { value: 'nav pieejams', label: 'nav pieejams' },
+];
+
 const UNIT_OPTIONS = ['€/m3', '€/t'];
 
-const lastUpdatedInput = document.querySelector('#globalUpdatedAt');
-const materialsBody = document.querySelector('#materialsBody');
+const lastUpdateInput = document.querySelector('#lastUpdate');
+const adminStatusEl = document.querySelector('#adminStatus');
+const tableBody = document.querySelector('#materialsTableBody');
 const saveBtn = document.querySelector('#saveBtn');
 const reloadBtn = document.querySelector('#reloadBtn');
-const addBtn = document.querySelector('#addMaterialBtn');
-const statusText = document.querySelector('#loadStatus');
+const addRowBtn = document.querySelector('#addRowBtn');
+const saveStatusEl = document.querySelector('#saveStatus');
 
 let materialsData = {
-  lastUpdated: '',
-  materials: []
+  lastUpdate: '',
+  materials: [],
 };
 
+// Inicializācija
 initAdmin();
 
 function initAdmin() {
   if (reloadBtn) reloadBtn.addEventListener('click', loadFromServer);
   if (saveBtn) saveBtn.addEventListener('click', handleSave);
-  if (addBtn) addBtn.addEventListener('click', handleAddMaterial);
+  if (addRowBtn) addRowBtn.addEventListener('click', handleAddRow);
 
-  // dzēšanu klausāmies uz visas tabulas (event delegation)
-  if (materialsBody) {
-    materialsBody.addEventListener('click', (e) => {
+  // Dzēšanas poga (event delegation)
+  if (tableBody) {
+    tableBody.addEventListener('click', (e) => {
       const btn = e.target.closest('.delete-material-btn');
       if (!btn) return;
       const row = btn.closest('tr');
@@ -33,7 +41,7 @@ function initAdmin() {
       if (confirm('Vai tiešām dzēst šo materiālu?')) {
         materialsData.materials.splice(index, 1);
         renderTable();
-        showStatus('Materiāls izdzēsts (jālejupielādē materials.json, lai saglabātos).', 'info');
+        setSaveStatus('Materiāls izdzēsts (neaizmirsti nospiest "Saglabāt izmaiņas").', 'info');
       }
     });
   }
@@ -42,28 +50,33 @@ function initAdmin() {
 }
 
 function loadFromServer() {
-  fetch('data/materials.json?_=' + Date.now())
-    .then(r => r.json())
-    .then(data => {
-      materialsData.lastUpdated = data.lastUpdated || '';
-      materialsData.materials = data.materials || data.items || [];
+  setAdminStatus('Ielādēju datus no servera...', 'info');
 
-      if (lastUpdatedInput) {
-        lastUpdatedInput.value = materialsData.lastUpdated || '';
+  fetch('/api/materials?_=' + Date.now())
+    .then((r) => r.json())
+    .then((data) => {
+      materialsData = {
+        lastUpdate: data.lastUpdate || '',
+        materials: Array.isArray(data.materials) ? data.materials : [],
+      };
+
+      if (lastUpdateInput) {
+        lastUpdateInput.value = materialsData.lastUpdate || '';
       }
 
       renderTable();
-      showStatus('Dati ielādēti no servera.', 'ok');
+      setAdminStatus('Dati ielādēti no servera.', 'ok');
+      setSaveStatus('Izmaiņas nav saglabātas.', 'info');
     })
-    .catch(err => {
-      console.error('Neizdevās ielādēt materials.json', err);
-      showStatus('Kļūda ielādējot materials.json', 'error');
+    .catch((err) => {
+      console.error('Neizdevās ielādēt /api/materials', err);
+      setAdminStatus('Kļūda ielādējot datus no servera.', 'error');
     });
 }
 
 function renderTable() {
-  if (!materialsBody) return;
-  materialsBody.innerHTML = '';
+  if (!tableBody) return;
+  tableBody.innerHTML = '';
 
   materialsData.materials.forEach((mat, index) => {
     const tr = document.createElement('tr');
@@ -74,7 +87,6 @@ function renderTable() {
     const nameInput = document.createElement('input');
     nameInput.type = 'text';
     nameInput.value = mat.name || '';
-    nameInput.className = 'admin-input';
     nameTd.appendChild(nameInput);
     tr.appendChild(nameTd);
 
@@ -86,15 +98,13 @@ function renderTable() {
     priceInput.min = '0';
     priceInput.value =
       mat.price !== undefined && mat.price !== null ? String(mat.price) : '';
-    priceInput.className = 'admin-input';
     priceTd.appendChild(priceInput);
     tr.appendChild(priceTd);
 
     // Mērvienība
     const unitTd = document.createElement('td');
     const unitSelect = document.createElement('select');
-    unitSelect.className = 'admin-select';
-    UNIT_OPTIONS.forEach(u => {
+    UNIT_OPTIONS.forEach((u) => {
       const opt = document.createElement('option');
       opt.value = u;
       opt.textContent = u;
@@ -104,15 +114,14 @@ function renderTable() {
     unitTd.appendChild(unitSelect);
     tr.appendChild(unitTd);
 
-    // Statuss
+    // Statuss / Pieejamība
     const statusTd = document.createElement('td');
     const statusSelect = document.createElement('select');
-    statusSelect.className = 'admin-select';
-    STATUS_OPTIONS.forEach(s => {
+    STATUS_OPTIONS.forEach((s) => {
       const opt = document.createElement('option');
-      opt.value = s;
-      opt.textContent = s;
-      if (mat.status === s) opt.selected = true;
+      opt.value = s.value;
+      opt.textContent = s.label;
+      if ((mat.availability || mat.status) === s.value) opt.selected = true;
       statusSelect.appendChild(opt);
     });
     statusTd.appendChild(statusSelect);
@@ -121,7 +130,6 @@ function renderTable() {
     // Piezīmes
     const notesTd = document.createElement('td');
     const notesArea = document.createElement('textarea');
-    notesArea.className = 'admin-textarea';
     notesArea.rows = 1;
     notesArea.value = mat.notes || '';
     notesTd.appendChild(notesArea);
@@ -144,81 +152,94 @@ function renderTable() {
     deleteTd.appendChild(deleteBtn);
     tr.appendChild(deleteTd);
 
-    materialsBody.appendChild(tr);
+    tableBody.appendChild(tr);
   });
 }
 
-function handleAddMaterial() {
+function handleAddRow() {
   materialsData.materials.push({
+    id: '',
     name: 'Jauns materiāls',
     price: '',
     unit: '€/m3',
-    status: 'pieejams',
+    availability: 'pieejams',
     notes: '',
-    id: 'material-' + (materialsData.materials.length + 1)
   });
   renderTable();
-  showStatus('Pievienots jauns materiāls (neaizmirsti lejupielādēt materials.json).', 'info');
+  setSaveStatus('Pievienots jauns materiāls (neaizmirsti nospiest "Saglabāt izmaiņas").', 'info');
 }
 
 function handleSave() {
-  // nolasa vērtības no tabulas atpakaļ materialsData
-  const rows = materialsBody ? Array.from(materialsBody.querySelectorAll('tr')) : [];
+  if (!tableBody) return;
+
+  const rows = Array.from(tableBody.querySelectorAll('tr'));
 
   materialsData.materials = rows.map((row, index) => {
-    const [nameTd, priceTd, unitTd, statusTd, notesTd, idTd] =
-      Array.from(row.children);
+    const [nameTd, priceTd, unitTd, statusTd, notesTd, idTd] = Array.from(
+      row.children
+    );
 
     const name = nameTd.querySelector('input').value.trim();
     const priceStr = priceTd.querySelector('input').value.trim();
     const unit = unitTd.querySelector('select').value;
-    const status = statusTd.querySelector('select').value;
+    const availability = statusTd.querySelector('select').value;
     const notes = notesTd.querySelector('textarea').value.trim();
-    const id = idTd.querySelector('.admin-id-pill').textContent.trim() ||
+    const id =
+      idTd.querySelector('.admin-id-pill').textContent.trim() ||
       generateIdFromName(name, index);
 
     const price = priceStr === '' ? '' : Number(priceStr);
 
-    return { id, name, price, unit, status, notes };
+    return { id, name, price, unit, availability, notes };
   });
 
-  if (lastUpdatedInput) {
-    materialsData.lastUpdated = lastUpdatedInput.value.trim();
+  if (lastUpdateInput) {
+    materialsData.lastUpdate = lastUpdateInput.value.trim();
   }
 
-  const jsonStr = JSON.stringify(materialsData, null, 2);
-  downloadFile('materials.json', jsonStr);
-  showStatus('Izmaiņas saglabātas. Lejupielādēts materials.json.', 'ok');
-}
+  setSaveStatus('Saglabāju izmaiņas...', 'info');
 
-function downloadFile(filename, content) {
-  const blob = new Blob([content], { type: 'application/json' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = filename;
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-  URL.revokeObjectURL(url);
+  fetch('/api/materials', {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(materialsData),
+  })
+    .then((r) => {
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      return r.json();
+    })
+    .then(() => {
+      setSaveStatus('Izmaiņas saglabātas serverī.', 'ok');
+      setAdminStatus('Dati ielādēti un saglabāti.', 'ok');
+    })
+    .catch((err) => {
+      console.error('Neizdevās saglabāt /api/materials', err);
+      setSaveStatus('Kļūda saglabājot izmaiņas.', 'error');
+    });
 }
 
 function generateIdFromName(name, index) {
   if (!name) return 'material-' + (index + 1);
-  return name
-    .toLowerCase()
-    .replace(/[\/\s]+/g, '-')
-    .replace(/[^a-z0-9\-]/g, '')
-    .replace(/\-+/g, '-')
-    .replace(/^\-+|\-+$/g, '') || 'material-' + (index + 1);
+  return (
+    name
+      .toLowerCase()
+      .replace(/[\/\s]+/g, '-')
+      .replace(/[^a-z0-9\-]/g, '')
+      .replace(/\-+/g, '-')
+      .replace(/^\-+|\-+$/g, '') || 'material-' + (index + 1)
+  );
 }
 
-function showStatus(msg, mode) {
-  if (!statusText) return;
-  statusText.textContent = msg;
-  statusText.classList.remove('status-ok', 'status-error', 'status-info');
+function setAdminStatus(msg, mode) {
+  if (!adminStatusEl) return;
+  adminStatusEl.textContent = msg;
+  adminStatusEl.style.color =
+    mode === 'ok' ? '#1f3b2d' : mode === 'error' ? '#b03030' : '#455449';
+}
 
-  if (mode === 'ok') statusText.classList.add('status-ok');
-  else if (mode === 'error') statusText.classList.add('status-error');
-  else statusText.classList.add('status-info');
+function setSaveStatus(msg, mode) {
+  if (!saveStatusEl) return;
+  saveStatusEl.textContent = msg;
+  saveStatusEl.style.color =
+    mode === 'ok' ? '#1f3b2d' : mode === 'error' ? '#b03030' : '#455449';
 }
