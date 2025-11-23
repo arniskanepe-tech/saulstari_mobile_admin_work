@@ -5,7 +5,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   if (!cards.length) return; // ja nav kartiņu, nav ko darīt
 
-  fetch('./data/materials.json')
+  fetch('/api/materials')
     .then(res => res.json())
     .then(data => {
       const { lastUpdate, materials } = data;
