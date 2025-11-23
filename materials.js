@@ -1,158 +1,119 @@
-// materials.js
-document.addEventListener('DOMContentLoaded', () => {
-  const listEl = document.querySelector('[data-materials-list]');
-  const dateEl = document.querySelector('[data-materials-updated]');
+// materials.js – lasām no /api/materials un aizpildām index.html vlistu
 
-  if (!listEl) {
-    console.error('Nav atrasts [data-materials-list] konteiners.');
+document.addEventListener('DOMContentLoaded', () => {
+  const updatedEl = document.getElementById('home-materials-updated');
+  const rows = document.querySelectorAll('.vitem[data-material-id]');
+
+  if (!rows.length) {
+    console.warn('Nav nevienas .vitem rindas ar data-material-id');
     return;
   }
 
-  // Tagad lasām no API, nevis statiska materials.json
   fetch('/api/materials?_=' + Date.now())
     .then(r => r.json())
     .then(data => {
-      const items = Array.isArray(data)
+      const materials = Array.isArray(data)
         ? data
         : (data.materials || data.items || []);
 
-      listEl.innerHTML = '';
-
-      // Atrast jaunāko updated_at laiku
-      if (dateEl && items.length > 0) {
-        let latest = null;
-        items.forEach(m => {
-          if (m.updated_at && (!latest || m.updated_at > latest)) {
-            latest = m.updated_at;
-          }
-        });
-        if (latest) {
-          dateEl.textContent = latest;
-        }
+      // Kopējais atjaunošanas datums
+      if (updatedEl && data.lastUpdate) {
+        updatedEl.textContent = 'Dati atjaunoti: ' + data.lastUpdate;
       }
 
-      items.forEach(material => {
-        const card = createMaterialCard(material);
-        listEl.appendChild(card);
+      // Uztaisām map pēc id
+      const byId = new Map();
+      materials.forEach(m => {
+        if (m.id) byId.set(m.id, m);
+      });
+
+      rows.forEach(row => {
+        const id = row.dataset.materialId;
+        const material = byId.get(id);
+        if (!material) return;
+
+        const priceEl = row.querySelector('.js-price');
+        const notesEl = row.querySelector('.js-notes');
+        const dotEl = row.querySelector('.dot');
+        const statusEl = row.querySelector('.js-status');
+        const actionEl = row.querySelector('.avail-action');
+
+        // Cena + mērvienība + PIEZĪME vienā rindā
+        if (priceEl) {
+          const basePrice =
+            material.price !== undefined && material.price !== null
+              ? trimPrice(material.price)
+              : '';
+          const unit = material.unit ? ' ' + material.unit : '';
+          const note = (material.notes || '').toString().trim();
+          const notePart = note ? ' ' + note : '';
+          priceEl.textContent = basePrice + unit + notePart;
+        }
+
+        // Veco notu lauku iztukšojam (vairs nav vajadzīgs)
+        if (notesEl) {
+          notesEl.textContent = '';
+        }
+
+        // Pieejamība
+        const availability = (material.availability || material.status || '')
+          .toString()
+          .trim()
+          .toLowerCase();
+
+        let dotClass = 'grey';
+        let statusText = '';
+        let interest = false;
+
+        switch (availability) {
+          case 'pieejams':
+            dotClass = 'green';
+            statusText = 'Pieejams';
+            break;
+          case 'neliels daudzums':
+            dotClass = 'yellow';
+            statusText = 'Neliels daudzums';
+            break;
+          case 'nav pieejams':
+            dotClass = 'red';
+            statusText = 'Nav pieejams';
+            interest = true;
+            break;
+          default:
+            dotClass = 'grey';
+            statusText = '';
+        }
+
+        if (dotEl) {
+          dotEl.classList.remove('green', 'yellow', 'red', 'grey');
+          dotEl.classList.add(dotClass);
+        }
+
+        if (statusEl) {
+          statusEl.textContent = statusText;
+        }
+
+        if (actionEl) {
+          if (interest) {
+            actionEl.innerHTML =
+              '<a href="contact.html#fast-form">interesēties</a>';
+          } else {
+            actionEl.innerHTML = '';
+          }
+        }
       });
     })
     .catch(err => {
       console.error('Neizdevās ielādēt materiālus no API', err);
+      if (updatedEl) {
+        updatedEl.textContent = 'Kļūda ielādējot materiālu datus.';
+      }
     });
 });
-
-function createMaterialCard(material) {
-  const card = document.createElement('article');
-  card.className = 'material-row';
-
-  // ==== Kreisā puse – nosaukums + cena + piezīme ====
-  const left = document.createElement('div');
-  left.className = 'material-row-main';
-
-  const titleRow = document.createElement('div');
-  titleRow.className = 'material-row-title';
-
-  const nameEl = document.createElement('div');
-  nameEl.className = 'material-name';
-  nameEl.textContent = material.name || '';
-
-  const priceEl = document.createElement('div');
-  priceEl.className = 'material-price';
-
-  const mainPriceSpan = document.createElement('span');
-  mainPriceSpan.textContent =
-    (material.price !== undefined && material.price !== null
-      ? trimPrice(material.price)
-      : '') +
-    (material.unit ? ' ' + material.unit : '');
-
-  priceEl.appendChild(mainPriceSpan);
-
-  // Piezīme – A variants: vienā rindā aiz mērvienības, tikai ja ir
-  const noteText = (
-    (material.notes != null ? material.notes : material.note) || ''
-  ).toString().trim();
-
-  if (noteText !== '') {
-    const noteSpan = document.createElement('span');
-    noteSpan.className = 'material-note-inline';
-    noteSpan.textContent = ' ' + noteText;
-    priceEl.appendChild(noteSpan);
-  }
-
-  titleRow.appendChild(nameEl);
-  titleRow.appendChild(priceEl);
-  left.appendChild(titleRow);
-  card.appendChild(left);
-
-  // ==== Labā puse – statuss + "interesēties" ====
-  const right = document.createElement('div');
-  right.className = 'material-row-status';
-
-  const label = document.createElement('span');
-  label.className = 'status-label';
-  label.textContent = 'Pieejamība:';
-
-  const statusInfo = normalizeStatus(material);
-
-  const dot = document.createElement('span');
-  dot.className = 'status-dot ' + statusInfo.dotClass;
-
-  const text = document.createElement('span');
-  text.className = 'status-text';
-  text.textContent = statusInfo.text || '';
-
-  right.appendChild(label);
-  right.appendChild(dot);
-  right.appendChild(text);
-
-  // Links "interesēties" tikai, ja nav pieejams
-  if (statusInfo.text === 'nav pieejams') {
-    const link = document.createElement('a');
-    link.href = '#kontakti';
-    link.className = 'status-link';
-    link.textContent = 'interesēties';
-    right.appendChild(link);
-  }
-
-  card.appendChild(right);
-
-  return card;
-}
 
 function trimPrice(value) {
   if (value === '' || value == null) return '';
   const n = Number(value);
   if (Number.isNaN(n)) return String(value);
-  // ja .0 – nerādām komatu, ja ir – rādām ar vienu zīmi
-  return Number.isInteger(n) ? String(n) : n.toFixed(1).replace(/\.0$/, '');
-}
-
-function normalizeStatus(material) {
-  // 1) ja jau ir teksts "pieejams / neliels daudzums / nav pieejams"
-  if (material.status) {
-    const s = material.status.toString().trim().toLowerCase();
-    if (s === 'pieejams') {
-      return { text: 'pieejams', dotClass: 'status-dot--green' };
-    }
-    if (s === 'neliels daudzums') {
-      return { text: 'neliels daudzums', dotClass: 'status-dot--yellow' };
-    }
-    if (s === 'nav pieejams') {
-      return { text: 'nav pieejams', dotClass: 'status-dot--red' };
-    }
-  }
-
-  // 2) ja nāk no API ar availability: available / limited / not_available
-  const av = (material.availability || '').toString().trim();
-  switch (av) {
-    case 'available':
-      return { text: 'pieejams', dotClass: 'status-dot--green' };
-    case 'limited':
-      return { text: 'neliels daudzums', dotClass: 'status-dot--yellow' };
-    case 'not_available':
-      return { text: 'nav pieejams', dotClass: 'status-dot--red' };
-    default:
-      return { text: '', dotClass: 'status-dot--grey' };
-  }
+  return Number.isInteger(n) ? String(n) : n.toFixed(2).replace(/\.00$/, '');
 }
