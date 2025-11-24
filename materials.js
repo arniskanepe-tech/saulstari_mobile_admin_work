@@ -59,7 +59,7 @@ function createMaterialRow(material, index) {
     .trim()
     .toLowerCase();
 
-  let dotClass = 'grey';
+  let dotClass = 'gray';
   let statusText = '';
   let showInterest = false;
 
@@ -78,7 +78,7 @@ function createMaterialRow(material, index) {
       showInterest = true;
       break;
     default:
-      dotClass = 'grey';
+      dotClass = 'gray';
       statusText = '';
   }
 
@@ -87,7 +87,7 @@ function createMaterialRow(material, index) {
   row.className = 'vitem';
   row.dataset.materialId = id;
 
-  // === Kreisā puse: nosaukums + cena (+ piezīme vienā rindā pagaidām) ===
+  // === Kreisā puse: nosaukums + cena, piezīme atsevišķā rindiņā ===
   const leftWrap = document.createElement('div');
 
   const nameLine = document.createElement('div');
@@ -107,7 +107,6 @@ function createMaterialRow(material, index) {
 
   let priceText = basePrice;
   if (unit) priceText += ' ' + unit;
-  if (note) priceText += ' ' + note; // pagaidām piezīmi turam tajā pašā rindā
 
   priceEl.textContent = priceText;
 
@@ -115,9 +114,12 @@ function createMaterialRow(material, index) {
   nameLine.appendChild(priceEl);
   leftWrap.appendChild(nameLine);
 
-  // meta rindiņa – pagaidām tukša
+  // meta rindiņa – šeit rādām piezīmi, ja ir
   const metaEl = document.createElement('div');
   metaEl.className = 'vmeta';
+  if (note) {
+    metaEl.textContent = note;
+  }
   leftWrap.appendChild(metaEl);
 
   // === Labā puse: pieejamība + interesēties ===
@@ -139,8 +141,7 @@ function createMaterialRow(material, index) {
   statusWrap.appendChild(dotEl);
   statusWrap.appendChild(statusEl);
 
-  // Tukšais "spacers", lai grid vienmēr būtu 3 kolonnas:
-  // [statusWrap] [tukšs] [interesēties]
+  // Tukšais "spacers" – flex variantā paslēpts ar CSS
   const spacerEl = document.createElement('div');
   spacerEl.className = 'avail-spacer';
 
@@ -154,7 +155,7 @@ function createMaterialRow(material, index) {
     actionEl.appendChild(link);
   }
 
-  // Pievienojam 3 kolonnas pareizā secībā
+  // Pievienojam 3 elementus pareizā secībā
   rightWrap.appendChild(statusWrap);
   rightWrap.appendChild(spacerEl);
   rightWrap.appendChild(actionEl);
