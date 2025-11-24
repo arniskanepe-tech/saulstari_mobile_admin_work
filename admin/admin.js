@@ -60,6 +60,9 @@ function loadFromServer() {
         materials: Array.isArray(data.materials) ? data.materials : [],
       };
 
+      // JAUNS: sakārtojam admin materiālus alfabētiskā secībā pēc nosaukuma
+      sortMaterialsByName();
+
       if (lastUpdateInput) {
         lastUpdateInput.value = materialsData.lastUpdate || '';
       }
@@ -165,6 +168,10 @@ function handleAddRow() {
     availability: 'pieejams',
     notes: '',
   });
+
+  // JAUNS: pēc pievienošanas pārkārtojam pēc nosaukuma
+  sortMaterialsByName();
+
   renderTable();
   setSaveStatus('Pievienots jauns materiāls (neaizmirsti nospiest "Saglabāt izmaiņas").', 'info');
 }
@@ -216,6 +223,17 @@ function handleSave() {
       console.error('Neizdevās saglabāt /api/materials', err);
       setSaveStatus('Kļūda saglabājot izmaiņas.', 'error');
     });
+}
+
+function sortMaterialsByName() {
+  materialsData.materials.sort((a, b) => {
+    const nameA = (a.name || '').toString().trim().toLocaleLowerCase('lv');
+    const nameB = (b.name || '').toString().trim().toLocaleLowerCase('lv');
+
+    if (nameA < nameB) return -1;
+    if (nameA > nameB) return 1;
+    return 0;
+  });
 }
 
 function generateIdFromName(name, index) {
