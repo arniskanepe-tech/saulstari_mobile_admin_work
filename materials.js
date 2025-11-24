@@ -87,17 +87,12 @@ function createMaterialRow(material, index) {
   row.className = 'vitem';
   row.dataset.materialId = id;
 
-  // === Kreisā puse: nosaukums + cena + piezīme ===
-  const leftWrap = document.createElement('div');
-  leftWrap.className = 'vleft';
-
-  const nameLine = document.createElement('div');
-  nameLine.className = 'vname-line';
-
+  // 1. kolonna – nosaukums
   const nameEl = document.createElement('div');
   nameEl.className = 'vname';
   nameEl.textContent = name;
 
+  // 2. kolonna – cena + mērvienība
   const priceEl = document.createElement('div');
   priceEl.className = 'vprice';
 
@@ -110,29 +105,21 @@ function createMaterialRow(material, index) {
   if (unit) priceText += ' ' + unit;
   priceEl.textContent = priceText;
 
-  nameLine.appendChild(nameEl);
-  nameLine.appendChild(priceEl);
-  leftWrap.appendChild(nameLine);
-
+  // 3. kolonna – piezīme
   const metaEl = document.createElement('div');
   metaEl.className = 'vmeta';
   metaEl.textContent = note || '';
-  leftWrap.appendChild(metaEl);
 
-  // === Labā puse: aplītis + statuss + interesēties ===
-  const rightWrap = document.createElement('div');
-  rightWrap.className = 'vright';
-
-  // Aplītis
+  // 4. kolonna – aplītis
   const dotEl = document.createElement('span');
   dotEl.className = 'dot ' + dotClass;
 
-  // Statusa teksts
+  // 5. kolonna – statusa teksts
   const statusEl = document.createElement('div');
   statusEl.className = 'avail-text';
   statusEl.textContent = statusText;
 
-  // Interesēties
+  // 6. kolonna – interesēties
   const actionEl = document.createElement('div');
   actionEl.className = 'avail-action';
   if (showInterest) {
@@ -142,13 +129,13 @@ function createMaterialRow(material, index) {
     actionEl.appendChild(link);
   }
 
-  rightWrap.appendChild(dotEl);
-  rightWrap.appendChild(statusEl);
-  rightWrap.appendChild(actionEl);
-
-  // Saliekam kopā
-  row.appendChild(leftWrap);
-  row.appendChild(rightWrap);
+  // Pievienojam elementus precīzā secībā
+  row.appendChild(nameEl);
+  row.appendChild(priceEl);
+  row.appendChild(metaEl);
+  row.appendChild(dotEl);
+  row.appendChild(statusEl);
+  row.appendChild(actionEl);
 
   return row;
 }
