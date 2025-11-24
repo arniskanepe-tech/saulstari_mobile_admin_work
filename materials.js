@@ -16,7 +16,7 @@ document.addEventListener('DOMContentLoaded', () => {
         ? data
         : (data.materials || data.items || []);
 
-      // Globālais atjaunošanas datums
+      // Kopējais atjaunošanas datums
       if (updatedEl && data.lastUpdate) {
         updatedEl.textContent = 'Dati atjaunoti: ' + data.lastUpdate;
       }
@@ -31,7 +31,9 @@ document.addEventListener('DOMContentLoaded', () => {
         return 0;
       });
 
+      // Notīram sarakstu un ieliekam rindas
       listEl.innerHTML = '';
+
       sorted.forEach((m, index) => {
         listEl.appendChild(createMaterialRow(m, index));
       });
@@ -80,61 +82,86 @@ function createMaterialRow(material, index) {
       statusText = '';
   }
 
-  // === Rinda ===
+  // === Galvenais konteiners ===
   const row = document.createElement('div');
   row.className = 'vitem';
   row.dataset.materialId = id;
 
-  // Palīgfunkcija tekstu šūnām
-  function textCell(extraClass, text) {
-    const el = document.createElement('div');
-    el.className = 'vcell ' + extraClass;
-    el.textContent = text;
-    return el;
-  }
+  // === Kreisā puse: nosaukums + cena, piezīme atsevišķā rindiņā ===
+  const leftWrap = document.createElement('div');
 
-  // 1. kolonna – materiāls
-  const nameCell = textCell('vcell-name', name);
+  const nameLine = document.createElement('div');
+  nameLine.className = 'vname-line';
 
-  // 2. kolonna – cena/mērvienība
+  const nameEl = document.createElement('div');
+  nameEl.className = 'vname';
+  nameEl.textContent = name;
+
+  const priceEl = document.createElement('div');
+  priceEl.className = 'vprice';
+
   const basePrice =
     price !== undefined && price !== null && price !== ''
       ? trimPrice(price)
       : '';
+
   let priceText = basePrice;
   if (unit) priceText += ' ' + unit;
-  const priceCell = textCell('vcell-price', priceText);
 
-  // 3. kolonna – piezīme
-  const noteCell = textCell('vcell-note', note || '');
+  priceEl.textContent = priceText;
 
-  // 4. kolonna – aplītis
-  const dotCell = document.createElement('div');
-  dotCell.className = 'vcell vcell-dot';
-  const dotSpan = document.createElement('span');
-  dotSpan.className = 'dot ' + dotClass;
-  dotCell.appendChild(dotSpan);
+  nameLine.appendChild(nameEl);
+  nameLine.appendChild(priceEl);
+  leftWrap.appendChild(nameLine);
 
-  // 5. kolonna – statuss
-  const statusCell = textCell('vcell-status', statusText);
+  // meta rindiņa – šeit rādām piezīmi, ja ir
+  const metaEl = document.createElement('div');
+  metaEl.className = 'vmeta';
+  if (note) {
+    metaEl.textContent = note;
+  }
+  leftWrap.appendChild(metaEl);
 
-  // 6. kolonna – interesēties
-  const interestCell = document.createElement('div');
-  interestCell.className = 'vcell vcell-interest';
+  // === Labā puse: pieejamība + interesēties ===
+  const rightWrap = document.createElement('div');
+  rightWrap.className = 'avail-grid';
+
+  // Punkts
+  const dotEl = document.createElement('span');
+  dotEl.className = 'dot ' + dotClass;
+
+  // Teksts
+  const statusEl = document.createElement('div');
+  statusEl.className = 'avail-text';
+  statusEl.textContent = statusText;
+
+  // Kopējais konteineris punktam + tekstam (lai tie IR vienā rindā)
+  const statusWrap = document.createElement('div');
+  statusWrap.className = 'avail-status-wrap';
+  statusWrap.appendChild(dotEl);
+  statusWrap.appendChild(statusEl);
+
+  // Tukšais "spacers" – flex variantā paslēpts ar CSS
+  const spacerEl = document.createElement('div');
+  spacerEl.className = 'avail-spacer';
+
+  // Interesēties
+  const actionEl = document.createElement('div');
+  actionEl.className = 'avail-action';
   if (showInterest) {
     const link = document.createElement('a');
     link.href = 'contact.html#fast-form';
     link.textContent = 'interesēties';
-    interestCell.appendChild(link);
+    actionEl.appendChild(link);
   }
 
-  // Pievienojam šūnas precīzā secībā (1–6)
-  row.appendChild(nameCell);
-  row.appendChild(priceCell);
-  row.appendChild(noteCell);
-  row.appendChild(dotCell);
-  row.appendChild(statusCell);
-  row.appendChild(interestCell);
+  // Pievienojam 3 elementus pareizā secībā
+  rightWrap.appendChild(statusWrap);
+  rightWrap.appendChild(spacerEl);
+  rightWrap.appendChild(actionEl);
+
+  row.appendChild(leftWrap);
+  row.appendChild(rightWrap);
 
   return row;
 }
