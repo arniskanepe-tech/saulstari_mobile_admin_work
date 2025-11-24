@@ -21,15 +21,21 @@ document.addEventListener('DOMContentLoaded', () => {
         updatedEl.textContent = 'Dati atjaunoti: ' + data.lastUpdate;
       }
 
+      // === JAUNS: alfabētiska kārtošana pēc nosaukuma ===
+      const sorted = [...materials].sort((a, b) =>
+        (a.name || '').localeCompare(b.name || '', 'lv', { sensitivity: 'base' })
+      );
+
       // Notīram sarakstu un ieliekam rindas
       listEl.innerHTML = '';
 
-      materials.forEach((m, index) => {
+      // Renderējam SAKĀRTO TO sarakstu
+      sorted.forEach((m, index) => {
         listEl.appendChild(createMaterialRow(m, index));
       });
     })
     .catch(err => {
-      console.error('Neizdevās ielādēt mater­iālus no API', err);
+      console.error('Neizdevās ielādēt materiālus no API', err);
       if (updatedEl) {
         updatedEl.textContent = 'Kļūda ielādējot materiālu datus.';
       }
@@ -77,7 +83,7 @@ function createMaterialRow(material, index) {
   row.className = 'vitem';
   row.dataset.materialId = id;
 
-  // === Kreisā puse: nosaukums + cena + piezīme A variantā ===
+  // === Kreisā puse: nosaukums + cena + piezīme (A variants) ===
   const leftWrap = document.createElement('div');
 
   const nameLine = document.createElement('div');
