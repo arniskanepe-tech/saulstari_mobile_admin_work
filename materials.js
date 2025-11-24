@@ -87,7 +87,7 @@ function createMaterialRow(material, index) {
   row.className = 'vitem';
   row.dataset.materialId = id;
 
-  // === Kreisā puse: nosaukums + cena + piezīme (A variants) ===
+  // === Kreisā puse: nosaukums + cena (+ piezīme vienā rindā pagaidām) ===
   const leftWrap = document.createElement('div');
 
   const nameLine = document.createElement('div');
@@ -115,7 +115,7 @@ function createMaterialRow(material, index) {
   nameLine.appendChild(priceEl);
   leftWrap.appendChild(nameLine);
 
-  // var palikt vmeta bloks, ja gribas, bet šobrīd neizmantojam
+  // meta rindiņa – pagaidām tukša
   const metaEl = document.createElement('div');
   metaEl.className = 'vmeta';
   leftWrap.appendChild(metaEl);
@@ -124,27 +124,29 @@ function createMaterialRow(material, index) {
   const rightWrap = document.createElement('div');
   rightWrap.className = 'avail-grid';
 
-  // 1. kolonna gridā – atstājam tukšu, lai saglabājas 120px vieta
-  const labelEl = document.createElement('div');
-  labelEl.className = 'avail-label';
-  labelEl.textContent = ''; // agrāk: 'Pieejamība:'
-  rightWrap.appendChild(labelEl);
-
-  // 2. kolonna – punkts
+  // Punkts
   const dotEl = document.createElement('span');
   dotEl.className = 'dot ' + dotClass;
-  rightWrap.appendChild(dotEl);
 
-  // 3. kolonna – statuss
+  // Teksts
   const statusEl = document.createElement('div');
   statusEl.className = 'avail-text';
   statusEl.textContent = statusText;
-  rightWrap.appendChild(statusEl);
 
-  // 4. kolonna – "interesēties" (vai tukšs, ja nav pieejams)
+  // Kopējais konteineris punktam + tekstam (lai tie IR vienā rindā)
+  const statusWrap = document.createElement('div');
+  statusWrap.className = 'avail-status-wrap';
+  statusWrap.appendChild(dotEl);
+  statusWrap.appendChild(statusEl);
+
+  // Tukšais "spacers", lai grid vienmēr būtu 3 kolonnas:
+  // [statusWrap] [tukšs] [interesēties]
+  const spacerEl = document.createElement('div');
+  spacerEl.className = 'avail-spacer';
+
+  // Interesēties
   const actionEl = document.createElement('div');
   actionEl.className = 'avail-action';
-
   if (showInterest) {
     const link = document.createElement('a');
     link.href = 'contact.html#fast-form';
@@ -152,6 +154,9 @@ function createMaterialRow(material, index) {
     actionEl.appendChild(link);
   }
 
+  // Pievienojam 3 kolonnas pareizā secībā
+  rightWrap.appendChild(statusWrap);
+  rightWrap.appendChild(spacerEl);
   rightWrap.appendChild(actionEl);
 
   row.appendChild(leftWrap);
