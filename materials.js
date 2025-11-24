@@ -21,7 +21,7 @@ document.addEventListener('DOMContentLoaded', () => {
         updatedEl.textContent = 'Dati atjaunoti: ' + data.lastUpdate;
       }
 
-      // === JAUNS: alfabētiska kārtošana pēc nosaukuma (trim + lowercase) ===
+      // Alfabētiska kārtošana pēc nosaukuma
       const sorted = [...materials].sort((a, b) => {
         const nameA = (a.name || '').toString().trim().toLocaleLowerCase('lv');
         const nameB = (b.name || '').toString().trim().toLocaleLowerCase('lv');
@@ -34,7 +34,6 @@ document.addEventListener('DOMContentLoaded', () => {
       // Notīram sarakstu un ieliekam rindas
       listEl.innerHTML = '';
 
-      // Renderējam SAKĀRTO TO sarakstu
       sorted.forEach((m, index) => {
         listEl.appendChild(createMaterialRow(m, index));
       });
@@ -121,13 +120,11 @@ function createMaterialRow(material, index) {
   metaEl.className = 'vmeta';
   leftWrap.appendChild(metaEl);
 
-  // === Labā puse: pieejamība + interesēties ===
+  // === Labā puse: pieejamības punkts + teksts + "interesēties" ===
   const rightWrap = document.createElement('div');
   rightWrap.className = 'avail-grid';
 
-  const labelEl = document.createElement('div');
-  labelEl.className = 'avail-label';
-  labelEl.textContent = 'Pieejamība:';
+  // TE agrāk bija "Pieejamība:" label – to vairs neveidojam
 
   const dotEl = document.createElement('span');
   dotEl.className = 'dot ' + dotClass;
@@ -146,7 +143,7 @@ function createMaterialRow(material, index) {
     actionEl.appendChild(link);
   }
 
-  rightWrap.appendChild(labelEl);
+  // tikai punkts + teksts + poga
   rightWrap.appendChild(dotEl);
   rightWrap.appendChild(statusEl);
   rightWrap.appendChild(actionEl);
