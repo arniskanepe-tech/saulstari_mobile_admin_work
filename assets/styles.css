@@ -35,14 +35,7 @@ nav a:hover{color:var(--primary)}
   gap:12px;
 }
 
-/* 6 kolonnas:
-   1: nosaukums
-   2: cena
-   3: piezīme
-   4: aplītis
-   5: statuss
-   6: interesēties
-*/
+/* rinda: kreisā puse (teksts), labā puse (aplītis+statuss+interesēties) */
 .vitem{
   background:var(--panel);
   border:1px solid var(--border);
@@ -50,38 +43,52 @@ nav a:hover{color:var(--primary)}
   padding:12px 16px;
   box-shadow:var(--shadow);
 
-  display:grid;
-  grid-template-columns:
-    minmax(0,2fr)   /* nosaukums – saņem lielāko rezervi */
-    auto           /* cena */
-    auto           /* piezīme (auto – neizstiepjas tukša) */
-    18px           /* aplītis */
-    auto           /* statuss */
-    auto;          /* interesēties */
-  column-gap:16px;
-  row-gap:4px;
+  display:flex;
   align-items:center;
+  justify-content:space-between;
+  gap:16px;
+  flex-wrap:wrap;
 }
 
-/* 1. kolonna – nosaukums */
+/* kreisā puse – nosaukums, cena, piezīme */
+.vleft{
+  flex:1;
+  min-width:0;
+}
+
 .vname{
   font-weight:800;
   letter-spacing:.2px;
 }
 
-/* 2. kolonna – cena */
 .vprice{
   font-weight:800;
   color:var(--primary);
+  margin-left:8px;
 }
 
-/* 3. kolonna – piezīme */
+.vname-line{
+  display:flex;
+  align-items:baseline;
+  flex-wrap:wrap;
+}
+
 .vmeta{
   font-size:13px;
   color:var(--muted);
+  margin-top:2px;
 }
 
-/* 4. kolonna – aplītis */
+/* labā puse – 3 kolonnas stingri: aplītis, statuss, interesēties */
+.vright{
+  flex:0 0 260px;               /* fiksēts platums -> visi punkti/teksti līnijā */
+  display:grid;
+  grid-template-columns:18px auto auto;
+  align-items:center;
+  column-gap:8px;
+}
+
+/* aplītis */
 .dot{
   display:inline-block;
   width:14px;
@@ -94,15 +101,15 @@ nav a:hover{color:var(--primary)}
 .dot.gray,
 .dot.grey{background:#94a3b8}
 
-/* 5. kolonna – statusa teksts */
+/* statusa teksts */
 .avail-text{
   color:var(--muted);
   white-space:nowrap;
 }
 
-/* 6. kolonna – interesēties */
+/* interesēties */
 .avail-action{
-  text-align:right;
+  text-align:left;
 }
 .avail-action a{
   color:var(--primary);
@@ -110,19 +117,23 @@ nav a:hover{color:var(--primary)}
   white-space:nowrap;
 }
 
-/* vecā .avail-label ja kur palikusi – slēpjam */
+/* ja kaut kur palikusi veca .avail-label klase – slēpjam */
 .avail-label{display:none}
 
-/* Mobilais – metam uz vienkāršu kolonnas layout */
+/* mobilajā – viss zem cita, labā puse iet zem kreisās */
 @media(max-width:780px){
   .vitem{
-    display:flex;
     flex-direction:column;
     align-items:flex-start;
-    gap:4px;
+  }
+  .vright{
+    flex:0 0 auto;
+    width:100%;
+    grid-template-columns:18px auto;
+    row-gap:4px;
   }
   .avail-action{
-    text-align:left;
+    grid-column:1 / -1;   /* interesēties aiziet nākamajā rindā */
   }
 }
 
