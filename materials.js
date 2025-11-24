@@ -16,7 +16,7 @@ document.addEventListener('DOMContentLoaded', () => {
         ? data
         : (data.materials || data.items || []);
 
-      // Kopējais atjaunošanas datums
+      // Globālais atjaunošanas datums
       if (updatedEl && data.lastUpdate) {
         updatedEl.textContent = 'Dati atjaunoti: ' + data.lastUpdate;
       }
@@ -31,9 +31,7 @@ document.addEventListener('DOMContentLoaded', () => {
         return 0;
       });
 
-      // Notīram sarakstu un ieliekam rindas
       listEl.innerHTML = '';
-
       sorted.forEach((m, index) => {
         listEl.appendChild(createMaterialRow(m, index));
       });
@@ -82,12 +80,12 @@ function createMaterialRow(material, index) {
       statusText = '';
   }
 
-  // === Galvenais konteiners ===
+  // === Rinda ===
   const row = document.createElement('div');
   row.className = 'vitem';
   row.dataset.materialId = id;
 
-  // Helper teksta šūnām
+  // Palīgfunkcija tekstu šūnām
   function textCell(extraClass, text) {
     const el = document.createElement('div');
     el.className = 'vcell ' + extraClass;
@@ -130,7 +128,7 @@ function createMaterialRow(material, index) {
     interestCell.appendChild(link);
   }
 
-  // Pievienojam šūnas precīzā secībā
+  // Pievienojam šūnas precīzā secībā (1–6)
   row.appendChild(nameCell);
   row.appendChild(priceCell);
   row.appendChild(noteCell);
