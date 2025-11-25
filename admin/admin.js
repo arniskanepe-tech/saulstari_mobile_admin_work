@@ -200,9 +200,19 @@ function handleSave() {
     return { id, name, price, unit, availability, notes };
   });
 
-  if (lastUpdateInput) {
-    materialsData.lastUpdate = lastUpdateInput.value.trim();
-  }
+   const now = new Date().toLocaleString('lv-LV', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+
+    materialsData.lastUpdate = now;
+
+    if (lastUpdateInput) {
+    lastUpdateInput.value = now;
+}
 
   setSaveStatus('Saglabāju izmaiņas...', 'info');
 
