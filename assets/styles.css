@@ -136,10 +136,14 @@ nav a:hover{color:var(--primary)}
   }
 }
 
-  .vmeta{
-    grid-column: 1 / -1;
-    grid-row: 2;
-    margin-top: 2px;
+/* Telefons LANDSCAPE:
+   - 1 rinda kā desktopā
+   - tikai proporcijas mīkstākas par 2/1/7
+*/
+@media (max-width: 780px) and (orientation: landscape) {
+  .vname-line{
+    grid-template-columns: 3fr 2fr 5fr; /* ~30% / 20% / 50% */
+    gap: 8px;
   }
 }
 .card{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:14px;box-shadow:var(--shadow)}
