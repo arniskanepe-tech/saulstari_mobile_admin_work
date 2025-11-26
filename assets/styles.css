@@ -88,10 +88,28 @@ nav a:hover{color:var(--primary)}
   display:none;
 }
 
-/* Mobilajā: salaužam pa rindām */
-@media(max-width:780px){ .vitem{grid-template-columns:1fr} .avail-grid{ flex-direction:column; align-items:flex-start; } .avail-action{ text-align:left; min-width:auto; } }
-/* TIKAI telefona portrait režīmam */
+/* Telefons PORTRETĀ:
+   - vitem kļūst par 1 kolonnu
+   - pieejamība zem teksta
+   - vārds + cena vienā rindā, apraksts zem tiem
+*/
 @media (max-width: 780px) and (orientation: portrait) {
+
+  .vitem{
+    grid-template-columns: 1fr;   /* vairs nav 2fr 1fr */
+  }
+
+  .avail-grid{
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .avail-action{
+    text-align: left;
+    min-width: auto;
+  }
+
+  /* vline pārkārtojums */
   .vname-line{
     grid-template-columns: auto auto;
     grid-template-rows: auto auto;
@@ -110,6 +128,13 @@ nav a:hover{color:var(--primary)}
     justify-self: flex-start;
     white-space: nowrap;
   }
+
+  .vmeta{
+    grid-column: 1 / -1;
+    grid-row: 2;
+    margin-top: 2px;
+  }
+}
 
   .vmeta{
     grid-column: 1 / -1;
