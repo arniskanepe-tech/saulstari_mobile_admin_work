@@ -90,7 +90,33 @@ nav a:hover{color:var(--primary)}
 
 /* Mobilajā: salaužam pa rindām */
 @media(max-width:780px){ .vitem{grid-template-columns:1fr} .avail-grid{ flex-direction:column; align-items:flex-start; } .avail-action{ text-align:left; min-width:auto; } }
+/* TIKAI telefona portrait režīmam */
+@media (max-width: 780px) and (orientation: portrait) {
+  .vname-line{
+    grid-template-columns: auto auto;
+    grid-template-rows: auto auto;
+    align-items: baseline;
+    gap: 4px 8px;
+  }
 
+  .vname{
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  .vprice{
+    grid-column: 2;
+    grid-row: 1;
+    justify-self: flex-start;
+    white-space: nowrap;
+  }
+
+  .vmeta{
+    grid-column: 1 / -1;
+    grid-row: 2;
+    margin-top: 2px;
+  }
+}
 .card{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:14px;box-shadow:var(--shadow)}
 .badge{display:inline-block;background:var(--accent);color:#27310c;border-radius:999px;padding:2px 8px;font-size:12px;font-weight:800;letter-spacing:.2px}
 
